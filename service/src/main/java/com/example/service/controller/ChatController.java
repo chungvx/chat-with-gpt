@@ -5,22 +5,22 @@ import com.example.service.model.chat.MessageRequest;
 import com.example.service.model.chat.MessageResponse;
 import com.example.service.model.gpt.ChatResponse;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Date;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1")
 public class ChatController {
     private OpenAIConfig openAIConfig;
+    private SimpMessagingTemplate template;
 
     @GetMapping("/chat-gpt")
     public String chatGpt(@RequestParam String prompt) {
@@ -34,9 +34,21 @@ public class ChatController {
         return response.getChoices().get(0).getMessage().getContent();
     }
 
-    @MessageMapping("/chat")
+    // POSTMAN
+    @PostMapping("/send")
+    public ResponseEntity<Void> sendMessage(@RequestBody MessageRequest request) {
+        template.convertAndSend("/topic/messages", request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    // method is called whenever message is send from client to "/app/sendMessage".
+    @MessageMapping("/sendMessage")
+    public void receiveMessage(@Payload MessageRequest request) {
+
+    }
+
     @SendTo("/topic/messages")
-    public MessageResponse chat(MessageRequest request) {
+    public MessageResponse broadcastMessage(MessageRequest request) {
         String time = Instant.now().toString();
         return new MessageResponse(request.getFrom(), request.getText(), time);
     }
