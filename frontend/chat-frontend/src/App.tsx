@@ -1,34 +1,25 @@
-import React, {useEffect, useRef, useState} from 'react';
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
+import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import {MessageType} from "./types/Message.type";
-import {Chip} from "./components/Chip";
+
+import { Chip } from './components/Chip';
+import { messageConst } from './mock';
+import { MessageType } from './types/Message.type';
 
 function App() {
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [temp, setTemp] = useState<string>("");
-
-  useEffect(() => {
-    const socket = io("http://localhost:8081" , {
-      "timeout" : 10000,
-      "transports" : ["websocket"],
-      withCredentials:true,
-      extraHeaders:{
-        "my-custom-header": "abcd"
-      }
-    });
-    socket.
-  }, []);
+  const [connected, setConnected] = useState<boolean>(false);
+  const [messages, setMessages] = useState<MessageType[]>(messageConst);
+  const [temp, setTemp] = useState<string>('');
 
   const messagesMarkup = messages.map((mes, index) => (
-      <Chip key={index} children={mes.text} status={mes.from !== "me" ? "new" : "success"} />
+    <Chip key={index} children={mes.text} status={mes.from !== 'me' ? 'new' : 'success'} />
   ));
   return (
     <BoxChat>
       <BoxChatMessage>{messagesMarkup}</BoxChatMessage>
       <BoxChatSendMessage>
-        <InputMessage value={temp} onChange={(e) => setTemp(e.target.value)} placeholder="Nhập tin nhắn ..." />
-        <ButtonSend onClick={()=> {}} >Gửi</ButtonSend>
+        <InputMessage value={temp} onChange={(e) => setTemp(e.target.value)} placeholder='Nhập tin nhắn ...' />
+        <ButtonSend onClick={() => {}}>Gửi</ButtonSend>
       </BoxChatSendMessage>
     </BoxChat>
   );
