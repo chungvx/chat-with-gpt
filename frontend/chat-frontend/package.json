@@ -2,6 +2,7 @@
   "name": "chat-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -20,10 +21,20 @@
     "web-vitals": "^2.1.0",
     "yarn": "^1.22.19"
   },
+  "devDependencies": {
+    "@emotion/babel-plugin": "^11.9.2",
+    "@trivago/prettier-plugin-sort-imports": "^4.2.1",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.0.3"
+  },
   "scripts": {
-    "dev": "npx nodemon",
-    "build": "rimraf ./dist && tsc && tsc-alias",
-    "start": "node dist/index.js",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
@@ -46,18 +57,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.2.1",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint": "^8.52.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "nodemon": "^3.0.1",
-    "prettier": "^3.0.3",
-    "rimraf": "^5.0.5",
-    "ts-node": "^10.9.1",
-    "tsc-alias": "^1.8.8",
-    "tsconfig-paths": "^4.2.0"
   }
 }

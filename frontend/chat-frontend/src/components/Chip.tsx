@@ -1,5 +1,5 @@
-import { css } from '@emotion/react';
-import styled from '@emotion/styled';
+import { css } from '@emotion/react/macro';
+import styled from '@emotion/styled/macro';
 import React from 'react';
 
 export interface ChipProps {

@@ -1,8 +1,8 @@
-import styled from '@emotion/styled';
+import styled from '@emotion/styled/macro';
 import React, { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import io from 'socket.io-client';
 
-import { Chip } from './components/Chip';
+import { Message } from './components/Message';
 import { messageConst } from './mock';
 import { MessageType } from './types/Message.type';
 
@@ -11,9 +11,14 @@ function App() {
   const [messages, setMessages] = useState<MessageType[]>(messageConst);
   const [temp, setTemp] = useState<string>('');
 
-  const messagesMarkup = messages.map((mes, index) => (
-    <Chip key={index} children={mes.text} status={mes.from !== 'me' ? 'new' : 'success'} />
-  ));
+  useEffect(() => {
+    const socket = io('http://localhost:8081', {
+      path: '/stomp-endpoint',
+    });
+    console.log(socket);
+  }, []);
+
+  const messagesMarkup = messages.map((mes, index) => <Message key={index} user={mes.from} content={mes.text} />);
   return (
     <BoxChat>
       <BoxChatMessage>{messagesMarkup}</BoxChatMessage>
@@ -32,12 +37,15 @@ const BoxChat = styled.div`
   border: 1px solid #282c34;
   display: flex;
   flex-direction: column;
+  padding: 16px;
 `;
 const BoxChatMessage = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 `;
 const BoxChatSendMessage = styled.div`
-  padding: 8px 16px;
   display: flex;
 `;
 const InputMessage = styled.textarea`
