@@ -1,22 +1,40 @@
 import styled from '@emotion/styled/macro';
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import React, { useEffect, useRef, useState } from 'react';
+import io, { Socket } from 'socket.io-client';
 
 import { Message } from './components/Message';
 import { messageConst } from './mock';
 import { MessageType } from './types/Message.type';
 
 function App() {
-  const [connected, setConnected] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessageType[]>(messageConst);
   const [temp, setTemp] = useState<string>('');
+  const socketRef = useRef<Socket>();
 
   useEffect(() => {
-    const socket = io('http://localhost:8081', {
+    const socketIo = io('http://10.202.154.16:8081', {
       path: '/stomp-endpoint',
+      transports: ['websocket'],
+      autoConnect: true,
     });
-    console.log(socket);
+    console.log('a', socketIo);
+    socketRef.current = socketIo;
   }, []);
+
+  const sendMessage = () => {
+    if (temp !== null && temp !== '' && socketRef.current !== undefined) {
+      const msg: MessageType = {
+        from: 'me',
+        text: temp,
+      };
+      console.log('a', socketRef.current);
+      socketRef.current.emit('/app/chat', msg);
+      setTemp('');
+    }
+  };
+  socketRef.current?.on('/topic/messages', (socket) => {
+    console.log('listen', socket);
+  });
 
   const messagesMarkup = messages.map((mes, index) => <Message key={index} user={mes.from} content={mes.text} />);
   return (
@@ -24,7 +42,7 @@ function App() {
       <BoxChatMessage>{messagesMarkup}</BoxChatMessage>
       <BoxChatSendMessage>
         <InputMessage value={temp} onChange={(e) => setTemp(e.target.value)} placeholder='Nhập tin nhắn ...' />
-        <ButtonSend onClick={() => {}}>Gửi</ButtonSend>
+        <ButtonSend onClick={sendMessage}>Gửi</ButtonSend>
       </BoxChatSendMessage>
     </BoxChat>
   );

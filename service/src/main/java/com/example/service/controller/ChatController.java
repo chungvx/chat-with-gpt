@@ -5,6 +5,7 @@ import com.example.service.model.chat.MessageRequest;
 import com.example.service.model.chat.MessageResponse;
 import com.example.service.model.gpt.ChatResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1")
 public class ChatController {
     private OpenAIConfig openAIConfig;
     private SimpMessagingTemplate template;
@@ -44,9 +45,10 @@ public class ChatController {
     // method is called whenever message is send from client to "/app/sendMessage".
     @MessageMapping("/sendMessage")
     public void receiveMessage(@Payload MessageRequest request) {
-
+        System.out.println("receive from client: " + request.getText());
     }
 
+    @MessageMapping("/chat")
     @SendTo("/topic/messages")
     public MessageResponse broadcastMessage(MessageRequest request) {
         String time = Instant.now().toString();

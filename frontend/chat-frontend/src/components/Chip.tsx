@@ -4,15 +4,15 @@ import React from 'react';
 
 export interface ChipProps {
   /**
-   * Trạng thái của badge
+   * Trạng thái của chip
    * @default "default"
    * */
   status?: 'success' | 'warning' | 'critical' | 'highlight' | 'new' | 'default';
-  /** Trạng thái complete của badge, show nút tròn thể hiện điều đó */
+  /** Trạng thái complete của chip, show nút tròn thể hiện điều đó */
   progress?: 'incomplete' | 'partiallyComplete' | 'complete';
-  /** Kích thước của badge */
+  /** Kích thước của chip */
   size?: 'small' | 'medium';
-  /** Nội dung để hiển thị bên trong badge */
+  /** Nội dung để hiển thị bên trong chip */
   children?: string;
 }
 
