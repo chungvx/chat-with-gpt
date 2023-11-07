@@ -5,3 +5,7 @@ openai:
   api:
     url: https://api.openai.com/v1/chat/completions
     key: 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
+
+socket:
+  port: 8082
+  host: localhost

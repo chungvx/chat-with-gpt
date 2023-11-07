@@ -1,27 +1,30 @@
 package com.example.service.controller;
 
+import com.corundumstudio.socketio.AckRequest;
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.listener.DataListener;
 import com.example.service.config.OpenAIConfig;
 import com.example.service.model.chat.MessageRequest;
 import com.example.service.model.chat.MessageResponse;
 import com.example.service.model.gpt.ChatResponse;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
 public class ChatController {
-    private OpenAIConfig openAIConfig;
-    private SimpMessagingTemplate template;
+    private final OpenAIConfig openAIConfig;
+
+    private final SocketIOServer socketServer;
+
+    public ChatController(OpenAIConfig openAIConfig, SocketIOServer socketServer) {
+        this.openAIConfig = openAIConfig;
+        this.socketServer = socketServer;
+        this.socketServer.addEventListener("chat", MessageRequest.class, onSendMessage);
+    }
 
     @GetMapping("/chat-gpt")
     public String chatGpt(@RequestParam String prompt) {
@@ -35,24 +38,24 @@ public class ChatController {
         return response.getChoices().get(0).getMessage().getContent();
     }
 
-    // POSTMAN
-    @PostMapping("/send")
-    public ResponseEntity<Void> sendMessage(@RequestBody MessageRequest request) {
-        template.convertAndSend("/topic/messages", request);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+    public DataListener<MessageRequest> onSendMessage = new DataListener<MessageRequest>() {
+        @Override
+        public void onData(SocketIOClient socketIOClient, MessageRequest request, AckRequest ackRequest) throws Exception {
+            /**
+             * Sending message to target user
+             * target user should subscribe the socket event with his/her name.
+             * Send the same payload to user
+             */
+            log.info("receive message from client " + socketIOClient.getSessionId() + ", message: " + request.getText());
+            String time = Instant.now().toString();
+            var response = new MessageResponse(request.getFrom(), request.getText(), time);
+            String BROAD_CAST = "allMessages"; // same as room_id, user_id who receives
+            socketServer.getBroadcastOperations().sendEvent(BROAD_CAST, response);
 
-    // method is called whenever message is send from client to "/app/sendMessage".
-    @MessageMapping("/sendMessage")
-    public void receiveMessage(@Payload MessageRequest request) {
-        System.out.println("receive from client: " + request.getText());
-    }
-
-    @MessageMapping("/chat")
-    @SendTo("/topic/messages")
-    public MessageResponse broadcastMessage(MessageRequest request) {
-        String time = Instant.now().toString();
-        return new MessageResponse(request.getFrom(), request.getText(), time);
-    }
-
+            /**
+             * After sending message to target user we can send acknowledge to sender
+             */
+            //ackRequest.sendAckData("Message send to target user successfully");
+        }
+    };
 }

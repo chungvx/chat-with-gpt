@@ -10,15 +10,25 @@ function App() {
   const [messages, setMessages] = useState<MessageType[]>(messageConst);
   const [temp, setTemp] = useState<string>('');
   const socketRef = useRef<Socket>();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const socketIo = io('http://10.202.154.16:8081', {
-      path: '/stomp-endpoint',
+    const socketIo = io('http://localhost:8082?', {
       transports: ['websocket'],
       autoConnect: true,
     });
-    console.log('a', socketIo);
+    socketIo.on('connect', () => {
+      console.log('connected');
+    });
     socketRef.current = socketIo;
+    socketIo.on('allMessages', (message) => {
+      setMessages((prevMess) => [...prevMess, message]);
+      scrollToBottom();
+    });
+    return () => {
+      socketIo.disconnect();
+      console.log('disconnect');
+    };
   }, []);
 
   const sendMessage = () => {
@@ -27,19 +37,22 @@ function App() {
         from: 'me',
         text: temp,
       };
-      console.log('a', socketRef.current);
-      socketRef.current.emit('/app/chat', msg);
+      socketRef.current.emit('chat', msg);
       setTemp('');
     }
   };
-  socketRef.current?.on('/topic/messages', (socket) => {
-    console.log('listen', socket);
-  });
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const messagesMarkup = messages.map((mes, index) => <Message key={index} user={mes.from} content={mes.text} />);
   return (
     <BoxChat>
-      <BoxChatMessage>{messagesMarkup}</BoxChatMessage>
+      <BoxChatMessage>
+        {messagesMarkup}
+        <div ref={messagesEndRef} />
+      </BoxChatMessage>
       <BoxChatSendMessage>
         <InputMessage value={temp} onChange={(e) => setTemp(e.target.value)} placeholder='Nhập tin nhắn ...' />
         <ButtonSend onClick={sendMessage}>Gửi</ButtonSend>
@@ -58,10 +71,10 @@ const BoxChat = styled.div`
   padding: 16px;
 `;
 const BoxChatMessage = styled.div`
-  flex: 1;
+  height: calc(600px - 7%);
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  flex-flow: column nowrap;
+  overflow-y: auto;
 `;
 const BoxChatSendMessage = styled.div`
   display: flex;
