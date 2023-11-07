@@ -13,7 +13,7 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const socketIo = io('http://localhost:8082?', {
+    const socketIo = io('http://localhost:8082', {
       transports: ['websocket'],
       autoConnect: true,
     });
@@ -27,7 +27,7 @@ function App() {
     });
     return () => {
       socketIo.disconnect();
-      console.log('disconnect');
+      console.log('disconnected');
     };
   }, []);
 
