@@ -4,9 +4,11 @@ import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.DataListener;
+import com.example.service.config.GeminiAIConfig;
 import com.example.service.config.OpenAIConfig;
 import com.example.service.model.chat.MessageRequest;
 import com.example.service.model.chat.MessageResponse;
+import com.example.service.model.gemini.ChatGeminiResponse;
 import com.example.service.model.gpt.ChatResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +22,16 @@ public class ChatController {
 
     private final SocketIOServer socketServer;
 
-    public ChatController(OpenAIConfig openAIConfig, SocketIOServer socketServer) {
+    private final GeminiAIConfig geminiAIConfig;
+
+    public ChatController(OpenAIConfig openAIConfig, SocketIOServer socketServer, GeminiAIConfig geminiAIConfig) {
         this.openAIConfig = openAIConfig;
         this.socketServer = socketServer;
+        this.geminiAIConfig = geminiAIConfig;
         this.socketServer.addEventListener("chat", MessageRequest.class, onSendMessage);
     }
 
-    @GetMapping("/chat-gpt")
+    @PostMapping("/chat-gpt")
     public String chatGpt(@RequestParam String prompt) {
         // call the API
         ChatResponse response = openAIConfig.sendToGpt(prompt);
@@ -36,6 +41,22 @@ public class ChatController {
 
         // return the first response
         return response.getChoices().get(0).getMessage().getContent();
+    }
+
+    @PostMapping("/chat-gemini")
+    public String chatGemini(@RequestBody String prompt) {
+        // call the API
+        ChatGeminiResponse response = geminiAIConfig.sendToGemini(prompt);
+        if (response == null
+                || response.getCandidates().isEmpty()
+                || response.getCandidates().get(0).getContent() == null
+                ||  response.getCandidates().get(0).getContent().getParts().isEmpty()
+                || response.getCandidates().get(0).getContent().getParts().get(0).getText() == null) {
+            return "No response";
+        }
+
+        // return the first response
+        return response.getCandidates().get(0).getContent().getParts().get(0).getText();
     }
 
     public DataListener<MessageRequest> onSendMessage = new DataListener<MessageRequest>() {

@@ -1,10 +1,16 @@
 server.port: 8081
 spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 openai:
-  model: gpt-3.5-turbo
+  model: gpt-4o-mini-2024-07-18
   api:
     url: https://api.openai.com/v1/chat/completions
-    key: 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
+    key: abc_sk-proj-2mIgFXNFWHYHsig5d1zv9-blZ_FjKsxjgkWT3JdBQTgiTXP9vCIHkytPRE2q4uL1A9XxbAEsB5T3BlbkFJmq-GJu1jH3NCfIcA4pBKK-B5TKACrEEEOUlXNyWPxn6aeiGHMue4Cp599NQdrY92lTRq1-Ls8A
+
+gemini:
+  model: gemini-1.5-flash-latest
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s
+    key: abc_AIzaSyDjFkPK_zAS7CUIw9PhAVNZbQHewd-sd84
 
 socket:
   port: 8082
